@@ -20,7 +20,7 @@ export function withAuth(
       );
     }
 
-    const user = verifyToken(token);
+    const user = await verifyToken(token);
     if (!user) {
       return NextResponse.json(
         { error: "Invalid or expired token" },
@@ -39,7 +39,7 @@ export function withAuth(
   };
 }
 
-export function getUserFromRequest(req: NextRequest): JWTPayload | null {
+export async function getUserFromRequest(req: NextRequest): Promise<JWTPayload | null> {
   const token = getTokenFromRequest(req);
   if (!token) return null;
   return verifyToken(token);

@@ -3,7 +3,7 @@ import prisma from "@/lib/db/prisma";
 import { getUserFromRequest } from "@/lib/middleware/authMiddleware";
 
 export async function GET(req: NextRequest) {
-  const user = getUserFromRequest(req);
+    const user = await getUserFromRequest(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -5,7 +5,7 @@ import { payBillSchema } from "@/lib/validators/schemas";
 import { createAuditLog } from "@/lib/middleware/auditLog";
 
 export async function POST(req: NextRequest) {
-  const user = getUserFromRequest(req);
+    const user = await getUserFromRequest(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

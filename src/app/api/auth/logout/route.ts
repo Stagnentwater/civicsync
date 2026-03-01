@@ -5,7 +5,7 @@ import { createAuditLog } from "@/lib/middleware/auditLog";
 
 export async function POST(req: NextRequest) {
   try {
-    const user = getUserFromRequest(req);
+    const user = await getUserFromRequest(req);
     if (user) {
       await createAuditLog(user.userId, "LOGOUT", { phone: user.phone });
     }

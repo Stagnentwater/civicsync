@@ -4,7 +4,7 @@ import { getUserFromRequest } from "@/lib/middleware/authMiddleware";
 
 // Seed endpoint - creates sample data for testing
 export async function POST(req: NextRequest) {
-  const user = getUserFromRequest(req);
+    const user = await getUserFromRequest(req);
   if (!user || user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

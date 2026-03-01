@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Issue JWT
-    const token = signToken({
+    const token = await signToken({
       userId: user.id,
       phone: user.phone,
       role: user.role,

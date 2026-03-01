@@ -7,7 +7,7 @@ import { parse } from "cookie";
 const PUBLIC_PATHS = ["/", "/login", "/api/auth/send-otp", "/api/auth/verify-otp"];
 const ADMIN_PATHS = ["/admin", "/api/admin"];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Rate limiting for API routes
@@ -45,7 +45,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  const user = verifyToken(token);
+  const user = await verifyToken(token);
   if (!user) {
     if (pathname.startsWith("/api")) {
       return addSecurityHeaders(
