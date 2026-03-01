@@ -1,0 +1,31 @@
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "CIVICSYNC_AI_SUPER_SECURE_JWT_SECRET_2026";
+
+export interface JWTPayload {
+  userId: string;
+  phone: string;
+  role: "CITIZEN" | "ADMIN";
+  iat?: number;
+  exp?: number;
+}
+
+export function signToken(payload: Omit<JWTPayload, "iat" | "exp">): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "15m" });
+}
+
+export function verifyToken(token: string): JWTPayload | null {
+  try {
+    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+  } catch {
+    return null;
+  }
+}
+
+export function decodeToken(token: string): JWTPayload | null {
+  try {
+    return jwt.decode(token) as JWTPayload;
+  } catch {
+    return null;
+  }
+}

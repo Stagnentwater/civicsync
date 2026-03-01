@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CITIZEN
+  ADMIN
+}
+
+enum BillStatus {
+  PENDING
+  PAID
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+model User {
+  id         String      @id @default(cuid())
+  name       String
+  phone      String      @unique
+  role       Role        @default(CITIZEN)
+  createdAt  DateTime    @default(now())
+  bills      Bill[]
+  complaints Complaint[]
+  auditLogs  AuditLog[]
+
+  @@index([phone])
+  @@index([role])
+}
+
+model Bill {
+  id        String     @id @default(cuid())
+  userId    String
+  billType  String     @default("General")
+  label     String     @default("Utility Bill")
+  amount    Float
+  dueDate   DateTime
+  status    BillStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+  user      User       @relation(fields: [userId], references: [id])
+  payments  Payment[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  billId    String
+  amount    Float
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  bill      Bill          @relation(fields: [billId], references: [id])
+
+  @@index([billId])
+  @@index([status])
+}
+
+model Complaint {
+  id          String          @id @default(cuid())
+  userId      String
+  department  String
+  description String
+  locality    String          @default("")
+  address     String          @default("")
+  landmark    String          @default("")
+  pincode     String          @default("")
+  status      ComplaintStatus @default(OPEN)
+  createdAt   DateTime        @default(now())
+  user        User            @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([department])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
