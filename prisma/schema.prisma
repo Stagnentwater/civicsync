@@ -28,15 +28,30 @@ enum ComplaintStatus {
   RESOLVED
 }
 
+enum BookingStatus {
+  BOOKED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum ServiceType {
+  GAS_CYLINDER
+  WATER_TANKER
+  NEW_WATER_CONNECTION
+  NEW_GAS_CONNECTION
+}
+
 model User {
-  id         String      @id @default(cuid())
-  name       String
-  phone      String      @unique
-  role       Role        @default(CITIZEN)
-  createdAt  DateTime    @default(now())
-  bills      Bill[]
-  complaints Complaint[]
-  auditLogs  AuditLog[]
+  id              String           @id @default(cuid())
+  name            String
+  phone           String           @unique
+  role            Role             @default(CITIZEN)
+  createdAt       DateTime         @default(now())
+  bills           Bill[]
+  complaints      Complaint[]
+  auditLogs       AuditLog[]
+  serviceBookings ServiceBooking[]
 
   @@index([phone])
   @@index([role])
@@ -100,4 +115,26 @@ model AuditLog {
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+}
+
+model ServiceBooking {
+  id           String        @id @default(cuid())
+  userId       String
+  serviceType  ServiceType
+  quantity     Int           @default(1)
+  amount       Float
+  address      String
+  locality     String        @default("")
+  landmark     String        @default("")
+  pincode      String        @default("")
+  latitude     Float?
+  longitude    Float?
+  status       BookingStatus @default(BOOKED)
+  paymentId    String        @default("")
+  createdAt    DateTime      @default(now())
+  user         User          @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([serviceType])
+  @@index([status])
 }

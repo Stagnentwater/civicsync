@@ -21,18 +21,11 @@ interface DashboardData {
     totalPayments: number;
   };
   recentComplaints: Array<{
-    id: string;
-    department: string;
-    description: string;
-    status: string;
-    createdAt: string;
-    user: { name: string; phone: string };
+    id: string; department: string; description: string; status: string;
+    createdAt: string; user: { name: string; phone: string };
   }>;
   recentPayments: Array<{
-    id: string;
-    amount: number;
-    status: string;
-    createdAt: string;
+    id: string; amount: number; status: string; createdAt: string;
     bill: { user: { name: string; phone: string } };
   }>;
 }
@@ -43,38 +36,27 @@ export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  useEffect(() => { fetchDashboard(); }, []);
 
   const fetchDashboard = async () => {
     try {
       const res = await fetch("/api/admin/dashboard");
-      if (res.ok) {
-        const json = await res.json();
-        setData(json);
-      }
-    } catch {
-      console.error("Failed to fetch admin dashboard");
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) setData(await res.json());
+    } catch { console.error("Failed to fetch admin dashboard"); }
+    finally { setLoading(false); }
   };
 
   if (loading) return <LoadingSpinner text={dict.common.loading} />;
-  if (!data) return <div className="text-center py-12 text-red-500">{dict.common.error}</div>;
+  if (!data) return <div className="text-center py-12 text-red-500 text-sm">{dict.common.error}</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{dict.admin.dashboard}</h1>
-        <Button variant="outline" onClick={() => router.push("/dashboard")}>
-          {dict.common.back}
-        </Button>
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-semibold text-zinc-900">{dict.admin.dashboard}</h1>
+        <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>{dict.common.back}</Button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
         <StatCard title={dict.admin.totalUsers} value={data.stats.totalUsers} icon="👥" color="blue" />
         <StatCard title={dict.admin.totalComplaints} value={data.stats.totalComplaints} icon="📋" color="purple" />
         <StatCard title={dict.admin.openComplaints} value={data.stats.openComplaints} icon="🔓" color="yellow" />
@@ -85,71 +67,53 @@ export default function AdminDashboard() {
         <StatCard title="In Progress" value={data.stats.inProgressComplaints} icon="🔄" color="yellow" />
       </div>
 
-      {/* Navigation Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <Card
-          className="hover:translate-y-[-2px] border-l-4 border-l-blue-500"
-          onClick={() => router.push("/admin/complaints")}
-          role="link"
-          ariaLabel={dict.admin.allComplaints}
-        >
-          <div className="flex items-center gap-4">
-            <span className="text-3xl" aria-hidden="true">📋</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+        <Card onClick={() => router.push("/admin/complaints")} role="link" ariaLabel={dict.admin.allComplaints}>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">📋</span>
             <div>
-              <h2 className="font-bold text-lg">{dict.admin.allComplaints}</h2>
-              <p className="text-sm text-gray-500">View and manage all complaints</p>
+              <h2 className="text-sm font-medium text-zinc-900">{dict.admin.allComplaints}</h2>
+              <p className="text-xs text-zinc-500">View and manage complaints</p>
             </div>
           </div>
         </Card>
-        <Card
-          className="hover:translate-y-[-2px] border-l-4 border-l-green-500"
-          onClick={() => router.push("/admin/payments")}
-          role="link"
-          ariaLabel={dict.admin.paymentLogs}
-        >
-          <div className="flex items-center gap-4">
-            <span className="text-3xl" aria-hidden="true">💳</span>
+        <Card onClick={() => router.push("/admin/payments")} role="link" ariaLabel={dict.admin.paymentLogs}>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">💳</span>
             <div>
-              <h2 className="font-bold text-lg">{dict.admin.paymentLogs}</h2>
-              <p className="text-sm text-gray-500">View all payment transactions</p>
+              <h2 className="text-sm font-medium text-zinc-900">{dict.admin.paymentLogs}</h2>
+              <p className="text-xs text-zinc-500">View payment transactions</p>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Recent Complaints */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">{dict.admin.recentComplaints}</h2>
+      <div className="mb-6">
+        <h2 className="text-sm font-medium text-zinc-700 mb-3">{dict.admin.recentComplaints}</h2>
         {data.recentComplaints.length === 0 ? (
-          <Card><p className="text-gray-500">{dict.common.noData}</p></Card>
+          <p className="text-xs text-zinc-400">{dict.common.noData}</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left" role="table">
-              <thead>
-                <tr className="bg-gray-50 border-b">
-                  <th className="px-4 py-3 text-sm font-semibold text-gray-600" scope="col">{dict.common.name}</th>
-                  <th className="px-4 py-3 text-sm font-semibold text-gray-600" scope="col">{dict.common.department}</th>
-                  <th className="px-4 py-3 text-sm font-semibold text-gray-600" scope="col">{dict.common.status}</th>
-                  <th className="px-4 py-3 text-sm font-semibold text-gray-600" scope="col">{dict.common.date}</th>
-                </tr>
-              </thead>
+          <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">
+            <table className="w-full text-left text-sm">
+              <thead><tr className="border-b border-zinc-100 bg-zinc-50">
+                <th className="px-3 py-2 text-xs font-medium text-zinc-500">{dict.common.name}</th>
+                <th className="px-3 py-2 text-xs font-medium text-zinc-500">{dict.common.department}</th>
+                <th className="px-3 py-2 text-xs font-medium text-zinc-500">{dict.common.status}</th>
+                <th className="px-3 py-2 text-xs font-medium text-zinc-500">{dict.common.date}</th>
+              </tr></thead>
               <tbody>
                 {data.recentComplaints.map((c) => (
-                  <tr key={c.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3">{c.user.name}</td>
-                    <td className="px-4 py-3">{c.department}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        c.status === "OPEN" ? "bg-blue-100 text-blue-800" :
-                        c.status === "IN_PROGRESS" ? "bg-orange-100 text-orange-800" :
-                        "bg-green-100 text-green-800"
-                      }`}>
-                        {c.status.replace("_", " ")}
-                      </span>
+                  <tr key={c.id} className="border-b border-zinc-50 hover:bg-zinc-50">
+                    <td className="px-3 py-2 text-zinc-700">{c.user.name}</td>
+                    <td className="px-3 py-2 text-zinc-700">{c.department}</td>
+                    <td className="px-3 py-2">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                        c.status === "OPEN" ? "bg-blue-50 text-blue-700" :
+                        c.status === "IN_PROGRESS" ? "bg-amber-50 text-amber-700" :
+                        "bg-emerald-50 text-emerald-700"
+                      }`}>{c.status.replace("_", " ")}</span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      {new Date(c.createdAt).toLocaleDateString()}
-                    </td>
+                    <td className="px-3 py-2 text-zinc-400 text-xs">{new Date(c.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -158,35 +122,28 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* Recent Payments */}
       <div>
-        <h2 className="text-xl font-bold text-gray-800 mb-4">{dict.admin.recentPayments}</h2>
+        <h2 className="text-sm font-medium text-zinc-700 mb-3">{dict.admin.recentPayments}</h2>
         {data.recentPayments.length === 0 ? (
-          <Card><p className="text-gray-500">{dict.common.noData}</p></Card>
+          <p className="text-xs text-zinc-400">{dict.common.noData}</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left" role="table">
-              <thead>
-                <tr className="bg-gray-50 border-b">
-                  <th className="px-4 py-3 text-sm font-semibold text-gray-600" scope="col">{dict.common.name}</th>
-                  <th className="px-4 py-3 text-sm font-semibold text-gray-600" scope="col">{dict.common.amount}</th>
-                  <th className="px-4 py-3 text-sm font-semibold text-gray-600" scope="col">{dict.common.status}</th>
-                  <th className="px-4 py-3 text-sm font-semibold text-gray-600" scope="col">{dict.common.date}</th>
-                </tr>
-              </thead>
+          <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">
+            <table className="w-full text-left text-sm">
+              <thead><tr className="border-b border-zinc-100 bg-zinc-50">
+                <th className="px-3 py-2 text-xs font-medium text-zinc-500">{dict.common.name}</th>
+                <th className="px-3 py-2 text-xs font-medium text-zinc-500">{dict.common.amount}</th>
+                <th className="px-3 py-2 text-xs font-medium text-zinc-500">{dict.common.status}</th>
+                <th className="px-3 py-2 text-xs font-medium text-zinc-500">{dict.common.date}</th>
+              </tr></thead>
               <tbody>
                 {data.recentPayments.map((p) => (
-                  <tr key={p.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3">{p.bill.user.name}</td>
-                    <td className="px-4 py-3 font-semibold">₹{p.amount.toLocaleString()}</td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                        {p.status}
-                      </span>
+                  <tr key={p.id} className="border-b border-zinc-50 hover:bg-zinc-50">
+                    <td className="px-3 py-2 text-zinc-700">{p.bill.user.name}</td>
+                    <td className="px-3 py-2 font-medium text-zinc-900">₹{p.amount.toLocaleString()}</td>
+                    <td className="px-3 py-2">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700">{p.status}</span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      {new Date(p.createdAt).toLocaleDateString()}
-                    </td>
+                    <td className="px-3 py-2 text-zinc-400 text-xs">{new Date(p.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>

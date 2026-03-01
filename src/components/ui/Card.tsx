@@ -6,14 +6,17 @@ interface CardProps {
   onClick?: () => void;
   role?: string;
   ariaLabel?: string;
+  hover?: boolean;
 }
 
-export default function Card({ children, className = "", onClick, role, ariaLabel }: CardProps) {
+export default function Card({ children, className = "", onClick, role, ariaLabel, hover = true }: CardProps) {
   const Component = onClick ? "button" : "div";
   return (
     <Component
-      className={`bg-white rounded-2xl shadow-md border border-gray-100 p-6 transition-all hover:shadow-lg ${
-        onClick ? "cursor-pointer active:scale-[0.98]" : ""
+      className={`bg-white rounded-lg border border-zinc-200 p-5 ${
+        hover ? "transition-shadow hover:shadow-sm" : ""
+      } ${
+        onClick ? "cursor-pointer text-left w-full" : ""
       } ${className}`}
       onClick={onClick}
       role={role}

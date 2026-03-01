@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useApp } from "@/components/providers/AppProvider";
-import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import StatusBadge from "@/components/ui/StatusBadge";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -25,15 +24,6 @@ interface PaymentReceipt {
   label: string;
 }
 
-const BILL_ICONS: Record<string, string> = {
-  Electricity: "⚡",
-  Water: "💧",
-  "Property Tax": "🏠",
-  Gas: "🔥",
-  Sewerage: "🚰",
-  General: "📄",
-};
-
 export default function BillsPage() {
   const { dict } = useApp();
   const router = useRouter();
@@ -44,108 +34,63 @@ export default function BillsPage() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [receipt, setReceipt] = useState<PaymentReceipt | null>(null);
 
-  useEffect(() => {
-    fetchBills();
-  }, []);
+  useEffect(() => { fetchBills(); }, []);
 
   const fetchBills = async () => {
     try {
       const res = await fetch("/api/billing");
       const data = await res.json();
-      if (res.ok) {
-        setBills(data.bills);
-      }
-    } catch {
-      setMessage({ type: "error", text: "Failed to load bills" });
-    } finally {
-      setLoading(false);
-    }
+      if (res.ok) setBills(data.bills);
+    } catch { setMessage({ type: "error", text: "Failed to load bills" }); }
+    finally { setLoading(false); }
   };
 
   const handlePay = async (bill: Bill) => {
-    setPayingId(bill.id);
-    setMessage(null);
-    setReceipt(null);
-    setProcessingStep(1);
-
-    // Step 1: Verifying bill
-    await new Promise((r) => setTimeout(r, 800));
-    setProcessingStep(2);
-
-    // Step 2: Processing payment
-    await new Promise((r) => setTimeout(r, 1200));
-    setProcessingStep(3);
-
+    setPayingId(bill.id); setMessage(null); setReceipt(null); setProcessingStep(1);
+    await new Promise((r) => setTimeout(r, 800)); setProcessingStep(2);
+    await new Promise((r) => setTimeout(r, 1200)); setProcessingStep(3);
     try {
       const res = await fetch("/api/billing/pay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ billId: bill.id }),
       });
       const data = await res.json();
-
-      // Step 3: Confirming
       await new Promise((r) => setTimeout(r, 600));
-
       if (res.ok) {
         setProcessingStep(4);
         setMessage({ type: "success", text: dict.common.paymentSuccess });
-        setReceipt({
-          id: data.payment.id,
-          amount: data.payment.amount,
-          billType: bill.billType,
-          label: bill.label,
-        });
+        setReceipt({ id: data.payment.id, amount: data.payment.amount, billType: bill.billType, label: bill.label });
         fetchBills();
-      } else {
-        setMessage({ type: "error", text: data.error || dict.common.paymentFailed });
-      }
-    } catch {
-      setMessage({ type: "error", text: dict.common.paymentFailed });
-    } finally {
-      setPayingId(null);
-      setProcessingStep(0);
-    }
+      } else { setMessage({ type: "error", text: data.error || dict.common.paymentFailed }); }
+    } catch { setMessage({ type: "error", text: dict.common.paymentFailed }); }
+    finally { setPayingId(null); setProcessingStep(0); }
   };
 
   if (loading) return <LoadingSpinner text={dict.common.loading} />;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{dict.common.bills}</h1>
-          <p className="text-gray-500 mt-1">{dict.common.viewBills}</p>
+          <h1 className="text-xl font-semibold text-zinc-900">{dict.common.bills}</h1>
+          <p className="text-sm text-zinc-500 mt-0.5">{dict.common.viewBills}</p>
         </div>
-        <Button variant="outline" onClick={() => router.push("/dashboard")}>
-          {dict.common.back}
-        </Button>
+        <Button variant="ghost" onClick={() => router.push("/dashboard")}>\u2190 {dict.common.back}</Button>
       </div>
 
       {/* Payment Processing Overlay */}
       {payingId && processingStep > 0 && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
-          <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
-            <div className="text-5xl mb-4 animate-pulse">
-              {processingStep === 1 ? "🔍" : processingStep === 2 ? "💳" : processingStep === 3 ? "✅" : "🎉"}
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
+          <div className="bg-white rounded-lg p-6 max-w-xs w-full text-center border border-zinc-200">
+            <div className="text-3xl mb-3">
+              {processingStep === 1 ? "\ud83d\udd0d" : processingStep === 2 ? "\ud83d\udcb3" : processingStep === 3 ? "\u2705" : "\ud83c\udf89"}
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">
-              {processingStep === 1
-                ? "Verifying Bill..."
-                : processingStep === 2
-                ? "Processing Payment..."
-                : processingStep === 3
-                ? "Confirming Transaction..."
-                : "Payment Complete!"}
-            </h3>
-            <div className="flex justify-center gap-2 mt-4">
+            <p className="text-sm font-medium text-zinc-800 mb-3">
+              {processingStep === 1 ? "Verifying..." : processingStep === 2 ? "Processing..." : processingStep === 3 ? "Confirming..." : "Done!"}
+            </p>
+            <div className="flex justify-center gap-1.5">
               {[1, 2, 3].map((s) => (
-                <div
-                  key={s}
-                  className={`h-2 w-12 rounded-full transition-colors ${
-                    processingStep >= s ? "bg-blue-500" : "bg-gray-200"
-                  }`}
-                />
+                <div key={s} className={`h-1.5 w-8 rounded-full ${processingStep >= s ? "bg-zinc-900" : "bg-zinc-200"}`} />
               ))}
             </div>
           </div>
@@ -154,116 +99,80 @@ export default function BillsPage() {
 
       {/* Payment Receipt */}
       {receipt && (
-        <div className="mb-6 bg-green-50 border-2 border-green-300 rounded-2xl p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-3xl">🧾</span>
-            <h3 className="text-xl font-bold text-green-800">Payment Receipt</h3>
+        <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-emerald-800">\ud83e\uddc0 Payment Receipt</p>
+            <button onClick={() => setReceipt(null)} className="text-xs text-zinc-500 hover:text-zinc-800">\u2715</button>
           </div>
-          <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-            <span className="text-gray-600">Transaction ID:</span>
-            <span className="font-mono font-medium text-gray-800">{receipt.id.slice(0, 12)}...</span>
-            <span className="text-gray-600">Bill Type:</span>
-            <span className="font-medium">{receipt.billType}</span>
-            <span className="text-gray-600">Description:</span>
-            <span className="font-medium">{receipt.label}</span>
-            <span className="text-gray-600">Amount Paid:</span>
-            <span className="font-bold text-green-700">₹{receipt.amount.toLocaleString()}</span>
-            <span className="text-gray-600">Status:</span>
-            <span className="font-bold text-green-700">✓ SUCCESS</span>
-            <span className="text-gray-600">Date:</span>
-            <span className="font-medium">{new Date().toLocaleString()}</span>
+          <div className="grid grid-cols-2 gap-1.5 text-xs">
+            <span className="text-zinc-500">ID:</span>
+            <span className="font-mono text-zinc-700">{receipt.id.slice(0, 12)}</span>
+            <span className="text-zinc-500">Type:</span>
+            <span className="text-zinc-700">{receipt.billType}</span>
+            <span className="text-zinc-500">Amount:</span>
+            <span className="font-medium text-emerald-700">\u20b9{receipt.amount.toLocaleString()}</span>
+            <span className="text-zinc-500">Status:</span>
+            <span className="font-medium text-emerald-700">\u2713 SUCCESS</span>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setReceipt(null)}>
-            {dict.common.close}
-          </Button>
         </div>
       )}
 
       {message && (
-        <div
-          className={`mb-6 px-4 py-3 rounded-xl ${
-            message.type === "success"
-              ? "bg-green-50 border border-green-200 text-green-700"
-              : "bg-red-50 border border-red-200 text-red-700"
-          }`}
-          role="alert"
-          aria-live="assertive"
-        >
+        <div className={`mb-4 px-3 py-2 rounded-lg text-sm ${message.type === "success" ? "bg-emerald-50 border border-emerald-200 text-emerald-700" : "bg-red-50 border border-red-200 text-red-700"}`} role="alert">
           {message.text}
         </div>
       )}
 
       {bills.length === 0 ? (
-        <Card className="text-center py-12">
-          <p className="text-4xl mb-4" aria-hidden="true">📭</p>
-          <p className="text-gray-500 text-lg">{dict.common.noData}</p>
-          <p className="text-gray-400 text-sm mt-2">No bills found for your account.</p>
-        </Card>
+        <div className="bg-white border border-zinc-200 rounded-lg p-8 text-center">
+          <p className="text-zinc-400 text-sm">{dict.common.noData}</p>
+        </div>
       ) : (
         <>
-          {/* Summary bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-xl border p-4 text-center">
-              <p className="text-2xl font-bold text-gray-800">{bills.length}</p>
-              <p className="text-xs text-gray-500">Total Bills</p>
-            </div>
-            <div className="bg-white rounded-xl border p-4 text-center">
-              <p className="text-2xl font-bold text-orange-600">{bills.filter(b => b.status === "PENDING").length}</p>
-              <p className="text-xs text-gray-500">Pending</p>
-            </div>
-            <div className="bg-white rounded-xl border p-4 text-center">
-              <p className="text-2xl font-bold text-green-600">{bills.filter(b => b.status === "PAID").length}</p>
-              <p className="text-xs text-gray-500">Paid</p>
-            </div>
-            <div className="bg-white rounded-xl border p-4 text-center">
-              <p className="text-2xl font-bold text-red-600">
-                ₹{bills.filter(b => b.status === "PENDING").reduce((sum, b) => sum + b.amount, 0).toLocaleString()}
-              </p>
-              <p className="text-xs text-gray-500">Due Amount</p>
-            </div>
+          {/* Summary */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            {[
+              { label: "Total", value: bills.length, color: "text-zinc-800" },
+              { label: "Pending", value: bills.filter(b => b.status === "PENDING").length, color: "text-amber-600" },
+              { label: "Paid", value: bills.filter(b => b.status === "PAID").length, color: "text-emerald-600" },
+              { label: "Due", value: `\u20b9${bills.filter(b => b.status === "PENDING").reduce((s, b) => s + b.amount, 0).toLocaleString()}`, color: "text-red-600" },
+            ].map((s) => (
+              <div key={s.label} className="bg-white border border-zinc-200 rounded-lg p-3 text-center">
+                <p className={`text-lg font-semibold ${s.color}`}>{s.value}</p>
+                <p className="text-[10px] uppercase tracking-wide text-zinc-400">{s.label}</p>
+              </div>
+            ))}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             {bills.map((bill) => {
-              const icon = BILL_ICONS[bill.billType] || BILL_ICONS.General;
               const isOverdue = bill.status === "PENDING" && new Date(bill.dueDate) < new Date();
               return (
-                <Card key={bill.id} className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${isOverdue ? "border-red-300 bg-red-50/30" : ""}`}>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-3xl" aria-hidden="true">{icon}</span>
-                      <div>
-                        <p className="font-bold text-lg text-gray-800">{bill.label}</p>
-                        <p className="text-sm text-gray-500">
-                          {bill.billType} • {dict.common.dueDate}: {new Date(bill.dueDate).toLocaleDateString()}
-                          {isOverdue && <span className="text-red-600 font-semibold ml-2">⚠ Overdue</span>}
-                        </p>
+                <div key={bill.id} className={`bg-white border rounded-lg p-4 ${isOverdue ? "border-red-200" : "border-zinc-200"}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-zinc-900 truncate">{bill.label}</p>
+                        <StatusBadge status={bill.status} />
                       </div>
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        Due {new Date(bill.dueDate).toLocaleDateString()}
+                        {isOverdue && <span className="text-red-500 ml-1">\u2022 Overdue</span>}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-3 ml-12">
-                      <p className="text-xl font-bold text-gray-900">₹{bill.amount.toLocaleString()}</p>
-                      <StatusBadge status={bill.status} />
+                    <div className="flex items-center gap-3 ml-3">
+                      <p className="text-sm font-semibold text-zinc-900">\u20b9{bill.amount.toLocaleString()}</p>
+                      {bill.status === "PENDING" && (
+                        <Button size="sm" onClick={() => handlePay(bill)} loading={payingId === bill.id}>
+                          Pay
+                        </Button>
+                      )}
+                      {bill.status === "PAID" && bill.payments[0] && (
+                        <span className="text-xs text-emerald-600">\u2713 {new Date(bill.payments[0].createdAt).toLocaleDateString()}</span>
+                      )}
                     </div>
                   </div>
-                  {bill.status === "PENDING" && (
-                    <div className="sm:self-center">
-                      <Button
-                        size="lg"
-                        variant="success"
-                        onClick={() => handlePay(bill)}
-                        loading={payingId === bill.id}
-                        aria-label={`${dict.common.pay} ₹${bill.amount}`}
-                      >
-                        {dict.common.pay} ₹{bill.amount.toLocaleString()}
-                      </Button>
-                    </div>
-                  )}
-                  {bill.status === "PAID" && bill.payments[0] && (
-                    <div className="sm:self-center text-sm text-green-600 font-medium">
-                      ✓ Paid on {new Date(bill.payments[0].createdAt).toLocaleDateString()}
-                    </div>
-                  )}
-                </Card>
+                </div>
               );
             })}
           </div>

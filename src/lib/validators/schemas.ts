@@ -55,6 +55,17 @@ export const payBillSchema = z.object({
   billId: z.string().min(1, "Bill ID is required"),
 });
 
+export const serviceBookingSchema = z.object({
+  serviceType: z.enum(["GAS_CYLINDER", "WATER_TANKER", "NEW_WATER_CONNECTION", "NEW_GAS_CONNECTION"]),
+  quantity: z.number().int().min(1).max(10).default(1),
+  address: z.string().min(5, "Address is required").max(500),
+  locality: z.string().max(200).optional().default(""),
+  landmark: z.string().max(200).optional().default(""),
+  pincode: z.string().regex(/^[0-9]{6}$/, "Pincode must be 6 digits").optional().default(""),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+});
+
 export const registerSchema = z.object({
   phone: z
     .string()

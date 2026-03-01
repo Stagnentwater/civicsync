@@ -7,63 +7,59 @@ export default function AccessibilityBar() {
   const { dict, locale, setLocale, highContrast, toggleHighContrast, largeFont, toggleLargeFont } = useApp();
 
   const languages: { code: Locale; label: string }[] = [
-    { code: "en", label: "English" },
-    { code: "hi", label: "हिन्दी" },
-    { code: "te", label: "తెలుగు" },
+    { code: "en", label: "EN" },
+    { code: "hi", label: "हि" },
+    { code: "te", label: "తె" },
   ];
 
   return (
     <div
-      className="bg-gray-100 border-b border-gray-200 px-4 py-2 high-contrast:bg-black high-contrast:border-yellow-400"
+      className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2"
       role="toolbar"
       aria-label={dict.common.accessibility}
     >
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-end gap-3 text-sm">
-        {/* Language Selector */}
-        <div className="flex items-center gap-2" role="group" aria-label={dict.common.language}>
-          <span className="font-medium text-gray-600" aria-hidden="true">🌐</span>
-          {languages.map((lang) => (
-            <button
-              key={lang.code}
-              onClick={() => setLocale(lang.code)}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                locale === lang.code
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
-              }`}
-              aria-pressed={locale === lang.code}
-              aria-label={`Switch to ${lang.label}`}
-            >
-              {lang.label}
-            </button>
-          ))}
-        </div>
+      {/* Language selector */}
+      <div className="flex gap-1 bg-white border border-zinc-200 rounded-lg p-1 shadow-sm">
+        {languages.map((lang) => (
+          <button
+            key={lang.code}
+            onClick={() => setLocale(lang.code)}
+            className={`w-8 h-8 rounded text-xs font-medium transition-colors ${
+              locale === lang.code
+                ? "bg-zinc-900 text-white"
+                : "text-zinc-500 hover:bg-zinc-100"
+            }`}
+            aria-pressed={locale === lang.code}
+            aria-label={`Switch to ${lang.label}`}
+          >
+            {lang.label}
+          </button>
+        ))}
+      </div>
 
-        {/* Accessibility Toggles */}
+      {/* Accessibility toggles */}
+      <div className="flex gap-1 bg-white border border-zinc-200 rounded-lg p-1 shadow-sm">
         <button
           onClick={toggleHighContrast}
-          className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-            highContrast
-              ? "bg-yellow-400 text-black border-2 border-yellow-600"
-              : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
+          className={`w-8 h-8 rounded text-xs transition-colors ${
+            highContrast ? "bg-yellow-400 text-black" : "text-zinc-500 hover:bg-zinc-100"
           }`}
           aria-pressed={highContrast}
           aria-label={dict.common.highContrast}
+          title={dict.common.highContrast}
         >
-          ◐ {dict.common.highContrast}
+          ◐
         </button>
-
         <button
           onClick={toggleLargeFont}
-          className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-            largeFont
-              ? "bg-green-500 text-white border-2 border-green-700"
-              : "bg-white text-gray-700 hover:bg-gray-200 border border-gray-300"
+          className={`w-8 h-8 rounded text-xs font-bold transition-colors ${
+            largeFont ? "bg-zinc-900 text-white" : "text-zinc-500 hover:bg-zinc-100"
           }`}
           aria-pressed={largeFont}
           aria-label={dict.common.largeFont}
+          title={dict.common.largeFont}
         >
-          A+ {dict.common.largeFont}
+          A+
         </button>
       </div>
     </div>

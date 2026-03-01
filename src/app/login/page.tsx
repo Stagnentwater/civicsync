@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/components/providers/AppProvider";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Card from "@/components/ui/Card";
 
 type Step = "phone" | "otp";
 
@@ -29,16 +28,10 @@ export default function LoginPage() {
         body: JSON.stringify({ phone }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Failed to send OTP");
-        return;
-      }
+      if (!res.ok) { setError(data.error || "Failed to send OTP"); return; }
       setStep("otp");
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Network error. Please try again."); }
+    finally { setLoading(false); }
   };
 
   const handleVerifyOtp = async () => {
@@ -51,10 +44,7 @@ export default function LoginPage() {
         body: JSON.stringify({ phone, otp, name: name || undefined }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Verification failed");
-        return;
-      }
+      if (!res.ok) { setError(data.error || "Verification failed"); return; }
       setUser({
         userId: data.user.id,
         name: data.user.name,
@@ -62,112 +52,75 @@ export default function LoginPage() {
         role: data.user.role,
       });
       router.push("/dashboard");
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Network error. Please try again."); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md" ariaLabel="Login form">
+    <div className="min-h-[85vh] flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">CS</span>
+          <div className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <span className="text-white text-sm font-bold">CS</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {dict.common.login}
-          </h1>
-          <p className="text-gray-500 mt-1">{dict.common.tagline}</p>
+          <h1 className="text-xl font-semibold text-zinc-900">{dict.common.login}</h1>
+          <p className="text-sm text-zinc-500 mt-1">{dict.common.tagline}</p>
         </div>
 
-        {error && (
-          <div
-            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6"
-            role="alert"
-            aria-live="assertive"
-          >
-            {error}
-          </div>
-        )}
+        <div className="bg-white border border-zinc-200 rounded-lg p-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg mb-4 text-sm" role="alert">
+              {error}
+            </div>
+          )}
 
-        {step === "phone" ? (
-          <div className="space-y-4">
-            <Input
-              label={dict.common.phone}
-              placeholder={dict.common.enterPhone}
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              autoFocus
-              aria-required="true"
-            />
-            <Input
-              label={`${dict.common.name} (optional)`}
-              placeholder={dict.common.enterName}
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <div className="pt-4">
-              <Button
-                fullWidth
-                size="lg"
-                onClick={handleSendOtp}
-                loading={loading}
-                disabled={phone.length < 10}
-              >
+          {step === "phone" ? (
+            <div className="space-y-4">
+              <Input
+                label={dict.common.phone}
+                placeholder={dict.common.enterPhone}
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                autoFocus
+              />
+              <Input
+                label={`${dict.common.name} (optional)`}
+                placeholder={dict.common.enterName}
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <Button fullWidth onClick={handleSendOtp} loading={loading} disabled={phone.length < 10}>
                 {dict.common.sendOtp}
               </Button>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl text-sm">
-              OTP sent to <strong>{phone}</strong>
-              <br />
-              <span className="text-xs text-blue-500">
-                (Use 123456 for demo)
-              </span>
-            </div>
-            <Input
-              label={dict.common.otp}
-              placeholder={dict.common.enterOtp}
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-              autoFocus
-              aria-required="true"
-            />
-            <div className="pt-4 space-y-3">
-              <Button
-                fullWidth
-                size="lg"
-                onClick={handleVerifyOtp}
-                loading={loading}
-                disabled={otp.length !== 6}
-              >
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-zinc-50 border border-zinc-200 text-zinc-600 px-3 py-2 rounded-lg text-sm">
+                OTP sent to <strong>{phone}</strong>
+                <span className="block text-xs text-zinc-400 mt-0.5">Use 123456 for demo</span>
+              </div>
+              <Input
+                label={dict.common.otp}
+                placeholder={dict.common.enterOtp}
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                autoFocus
+              />
+              <Button fullWidth onClick={handleVerifyOtp} loading={loading} disabled={otp.length !== 6}>
                 {dict.common.verifyOtp}
               </Button>
-              <Button
-                fullWidth
-                size="md"
-                variant="outline"
-                onClick={() => {
-                  setStep("phone");
-                  setOtp("");
-                  setError("");
-                }}
-              >
-                {dict.common.back}
+              <Button fullWidth variant="ghost" onClick={() => { setStep("phone"); setOtp(""); setError(""); }}>
+                ← {dict.common.back}
               </Button>
             </div>
-          </div>
-        )}
-      </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
